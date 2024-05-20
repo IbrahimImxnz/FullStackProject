@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from .server import db
 
+db = SQLAlchemy()
 
 viewers = db.Table(
     "customer_restaurant_association",

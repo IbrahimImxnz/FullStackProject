@@ -1,5 +1,5 @@
-from .database import Restaurant, Customer, Items, Order 
-from .server import db
+from database import Restaurant, Customer, Items, Order, db
+
 
 def create_user(email, firstname, lastname, address, password, zip):
     customer = Customer(Email = email, First_name = firstname, Last_name = lastname, 
