@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('register_restaurant') }}">
+        <div>
+            <label for="name">Name</label><br>
+            <input type="text" id="name" name="Name" required><br>
+        </div>
+        <div>
+            <label for="email">Email</label><br>
+            <input type="email" id="email" name="Email" required><br>
+        </div>
+        <div>
+            <label for="address">Address</label><br>
+            <input type="text" id="address" name="Address" required><br>
+        </div>
+        <div>
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="Password" required><br>
+        </div>
+        <div>
+            <label for="confirm_password">Confirm Password</label><br>
+            <input type="password" id="confirm_password" name="Confirmed_Password" required><br>
+        </div>
+        <div>
+            <label for="image">image</label><br>
+            <input type="file" id="image" name="image"><br>
+        </div>
+        <div>
+            <label for="description">Description</label><br>
+            <textarea id="description" name="Description" required></textarea><br>
+        </div>
+        <div>
+            <label for="deliveryradius">Delivery_radius</label><br>
+            <input type="text" id="deliveryradius_start" name="Delivery_radius_start" placeholder="Start Zip Code" required> until 
+            <input type="text" id="deliveryradius_end" name="Delivery_radius_end" placeholder="End Zip Code" required><br>
+        </div>
+        </div>
+        <div>
+            <label for="openinghrs">Opening_hours</label><br>
+            <input type="text" id="openinghrs" name="Opening_hours" placeholder="OpeningHour-ClosingHour" required><br>
+        </div>
+        <div>
+            <button type="submit">Sign Up</button>
+        </div>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
