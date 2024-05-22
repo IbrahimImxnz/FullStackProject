@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+import json
 db = SQLAlchemy()
 
 
@@ -23,16 +24,19 @@ class Restaurant(db.Model):
     Password = db.Column(db.String(128), nullable=False)
     image = db.Column(db.String(255), nullable=True)
     Description = db.Column(db.String(1000), nullable=False)
-    Delivery_radius = db.Column(db.Integer, nullable = False)
+    Delivery_radius = db.Column(db.String, nullable = False)
     Opening_hours = db.Column(db.String(255), nullable = False)
     customers = db.relationship("Customer",secondary = viewers, backref = db.backref("'viewed_restaurants', lazy=True"))
  #   menu = db.relationship("Menu", backref="Restaurant" ,uselist = False)
     orders = db.relationship("Order",backref="Restaurant",lazy=True)
     def set_pass(self,password):
         self.Password=generate_password_hash(password)
-   # def check(self,password):
-   #     return check_password_hash(self.Password,password)
-
+    def check(self,password):
+        return check_password_hash(self.Password,password)
+    def set_deliveryradius(self, start, end):
+        self.Delivery_radius = json.dumps(list(range(int(start),int(end) + 1)))
+    def get_deliverradius(self):
+        return json.loads(self.Delivery_radius)    
 
 class Customer(db.Model):
     C_id = db.Column(db.Integer, primary_key = True)
@@ -60,8 +64,8 @@ class Items(db.Model):
     Price = db.Column(db.Integer, nullable = False)
     Description = db.Column(db.String(1000), nullable = False)
     Picture = db.Column(db.String(255), nullable = True)
-    Total_price = db.Column(db.Integer, nullable = False)
     R_id = db.Column(db.Integer,db.ForeignKey("restaurant.R_id"),nullable=False)
+    Total_price = db.Column(db.Integer,nullable=True)
    # menu_id = db.Column(db.Integer, db.ForeignKey("M_id"))
     restaurant = db.relationship("Restaurant",backref="Items")
     orders = db.relationship("Order",secondary=orders,backref="Items") 

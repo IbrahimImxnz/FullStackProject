@@ -1,10 +1,8 @@
 from flask import Flask, render_template, redirect, url_for, request,flash,session
 from flask_sqlalchemy import SQLAlchemy
 from database import Restaurant,Customer,Order,Items,db
-from databasequeries import create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant
+from databasequeries import create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant,delete_item
 import re
-from werkzeug.security import check_password_hash,generate_password_hash
-
 
 app = Flask(__name__)
 
@@ -34,6 +32,10 @@ def register_user():
         
         if get_user(email):
             flash("Email already exists!")
+            return redirect(url_for("register_user"))
+        
+        if not re.match(r"\d{5}",zip):
+            flash("Zip must be a 5 digit number please")
             return redirect(url_for("register_user"))
         
         create_user(email,firstname,lastname,address,password,zip)
@@ -72,9 +74,11 @@ def register_restaurant():
             return redirect(url_for("register_restaurant"))
 
         deliveryradius = f"{deliveryradius_start} until {deliveryradius_end}"
-        create_restaurant(name,email,address,password,image,description,deliveryradius,openinghrs)
+        restaurant = create_restaurant(name,email,address,password,image,description,deliveryradius,openinghrs)
+        restaurant.set_deliveryradius(deliveryradius_start, deliveryradius_end)
+        db.session.commit()
         flash("Account successfully created!")
-        return redirect(url_for("home"))
+        return redirect(url_for("resthome"))
     return render_template("registrest.html")
 
 @app.route("/login/user", methods=['GET','POST'])
@@ -87,6 +91,7 @@ def user_login():
         if user and user.check(password):
             session["user_id"]=user.C_id
             flash("Login successful")
+            restaurants = get_restaurants(user.Zip)
             return redirect(url_for("home"))
         else:
             flash("Wrong email or password")
@@ -103,14 +108,61 @@ def restaurant_login():
         if restaurant and restaurant.check(password):
             session["restaurant_id"]=restaurant.R_id
             flash("Login successful")
-            return redirect(url_for("home"))
+            return redirect(url_for("resthome"))
         else:
             flash("Wrong email or password")
             return redirect(url_for("user_login"))
     return render_template("restlogin.html")
 
+@app.route("/logout/user")
+def logoutuser():
+    session.pop("user_id",None)
+    flash("Logged out")
+    return redirect(url_for("home"))
 
+@app.route("/logout/restaurant")
+def logoutrest():
+    session.pop("restaurant_id",None)
+    flash("Logged out")
+    return redirect(url_for("home"))
 
+def get_restaurants(zip):
+    restaurants = Restaurant.query.all()
+    restaurants_in_area = []
+
+    for i in restaurants:
+        deliveryradius = i.get_delivery_radius()
+        if zip in deliveryradius:
+            restaurants_in_area.append(i)
+
+    return restaurants_in_area        
+
+@app.route("/restaurant/home", methods = ["GET", "POST"])
+def resthome():
+    if "restaurant_id" not in session:
+        flash("Please login first")
+        return redirect(url_for("restaurant_login"))
+    restaurant_id = session["restaurant_id"]
+    restaurant = Restaurant.query.get(restaurant_id)
+    if request.method == "POST":
+        category = request.form.get("Category")
+        name = request.form.get("Name")
+        price = request.form.get("Price")
+        description = request.form.get("Description")
+        picture = request.form.get("Picture")
+        total_price = price
+
+        create_menu_item(category,name,price,description,picture,total_price,restaurant_id)
+        flash("Item added to menu")
+        return redirect(url_for("resthome"))
+    items = get_items(restaurant_id)
+    return render_template("resthome.html", restaurant=restaurant, items=items)
+
+@app.route("/restaurant/delete_item/<int:item_id>", methods=["POST"])
+def delete_menuitem(item_id):
+    delete_item(item_id)
+    flash("item deleted from Menu")
+    return redirect(url_for("resthome"))
 
 with app.app_context():
     db.create_all()
