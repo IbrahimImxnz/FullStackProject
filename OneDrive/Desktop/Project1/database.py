@@ -34,9 +34,19 @@ class Restaurant(db.Model):
     def check(self,password):
         return check_password_hash(self.Password,password)
     def set_deliveryradius(self, start, end):
-        self.Delivery_radius = json.dumps(list(range(int(start),int(end) + 1)))
+        try:
+            self.Delivery_radius = json.dumps([str(i) for i in range(int(start), int(end) + 1)])
+        except Exception as e:
+            print(f"Error in setting delivery radius: {e}")   
     def get_deliverradius(self):
-        return json.loads(self.Delivery_radius)    
+        try:
+            return json.loads(self.Delivery_radius)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+            return []    
+        except Exception as e:
+            print(f"Error in getting the radius: {e}")
+            return []
 
 class Customer(db.Model):
     C_id = db.Column(db.Integer, primary_key = True)

@@ -40,7 +40,7 @@ def register_user():
         
         create_user(email,firstname,lastname,address,password,zip)
         flash("Account successfully created!")
-        return redirect(url_for("home"))
+        return redirect(url_for("userhome"))
     return render_template("registuser.html")
 
 @app.route("/register/restaurant", methods=['GET','POST'])
@@ -90,12 +90,13 @@ def user_login():
         user = get_user(email)
         if user and user.check(password):
             session["user_id"]=user.C_id
+            session["user_zip"]=user.Zip
+            session["email"]=user.Email
             flash("Login successful")
-            restaurants = get_restaurants(user.Zip)
-            return redirect(url_for("home"))
+            return redirect(url_for("userhome"))
         else:
             flash("Wrong email or password")
-            return redirect(url_for("user_login"))
+            return redirect(url_for("home"))
     return render_template("loginuser.html")
        
 @app.route("/login/restaurant", methods=["GET","POST"])
@@ -127,15 +128,19 @@ def logoutrest():
     return redirect(url_for("home"))
 
 def get_restaurants(zip):
-    restaurants = Restaurant.query.all()
-    restaurants_in_area = []
+    try:
+        restaurants = Restaurant.query.all()
+        restaurants_in_area = []
 
-    for i in restaurants:
-        deliveryradius = i.get_delivery_radius()
-        if zip in deliveryradius:
-            restaurants_in_area.append(i)
+        for i in restaurants:
+            deliveryradius = i.get_deliverradius()
+            if str(zip) in deliveryradius:
+                restaurants_in_area.append(i)
 
-    return restaurants_in_area        
+        return restaurants_in_area 
+    except Exception as e:
+        print(f"Error in getting the restaurants: {e}")
+        return []       
 
 @app.route("/restaurant/home", methods = ["GET", "POST"])
 def resthome():
@@ -163,6 +168,23 @@ def delete_menuitem(item_id):
     delete_item(item_id)
     flash("item deleted from Menu")
     return redirect(url_for("resthome"))
+
+@app.route("/user/home")
+def userhome():
+    if "user_id" not in session:
+        flash("Please login first!")
+        return redirect(url_for("user_login"))
+    zip = session.get("user_zip")
+    email = session.get("email")
+    user = get_user(email)
+    restaurants = get_restaurants(zip)
+    return render_template("userhome.html", restaurants=restaurants, user=user)
+
+@app.route("/restaurant/<int:restaurant_id>/menu")
+def viewitems(restaurant_id):
+    restaurant = Restaurant.query.get_or_404(restaurant_id)
+    items = get_items(restaurant_id)
+    return render_template("viewitems.html", restaurant=restaurant, items = items)
 
 with app.app_context():
     db.create_all()
