@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from database import Restaurant,Customer,Order,Items,db
 from databasequeries import create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant,delete_item
 import re
+import datetime
 
 app = Flask(__name__)
 
@@ -182,10 +183,97 @@ def userhome():
 
 @app.route("/restaurant/<int:restaurant_id>/menu")
 def viewitems(restaurant_id):
-    restaurant = Restaurant.query.get_or_404(restaurant_id)
+    restaurant = Restaurant.query.get(restaurant_id)
     items = get_items(restaurant_id)
     return render_template("viewitems.html", restaurant=restaurant, items = items)
 
+@app.route("/basket/add/<int:item_id>", methods = ["POST"])
+def addtobasket(item_id):
+    if "user_id" not in session:
+        flash("Please login first")
+        return redirect(url_for("user_login"))
+    item = Items.query.get(item_id)
+    restaurant_id = item.R_id
+    restaurant = str(restaurant_id)
+
+    if "basket" not in session:
+        session["basket"]={}
+
+    basket = session["basket"]
+    if restaurant not in basket:
+        basket[restaurant] = {}
+
+    if str(item_id) in basket[restaurant]:
+        basket[restaurant][str(item_id)] += 1
+    else:
+        basket[restaurant][str(item_id)] = 1
+
+    session["basket"]=basket
+    flash("item added to basket")
+    return redirect(url_for("viewitems",restaurant_id=restaurant_id)) 
+
+@app.route("/basket")
+def viewbasket():
+    if "user_id" not in session:
+        flash("Please login first!")
+        return redirect(url_for("user_login"))
+
+    if "basket" not in session:
+        flash("your basket is empty")
+        return redirect(url_for("userhome"))
+
+    basket = session["basket"]
+    restaurant_id = int(list(basket.keys())[0])       
+    restaurant = Restaurant.query.get(restaurant_id)
+    basket_items = [(Items.query.get(int(item_id)), quantity) for item_id, quantity in basket[str(restaurant_id)].items()]
+    total=0
+    for item_id,quantity in basket[str(restaurant_id)].items():
+        item = Items.query.get(int(item_id))
+        total = item.Price * quantity
+    return render_template("basket.html", basket_items=basket_items, restaurant = restaurant, total= total)
+
+@app.route("/basket/remove/<int:item_id>", methods=["POST"])
+def removefrombasket(item_id):
+    if "basket" not in session:
+        flash("Your basket is empty")
+        return redirect(url_for("view_basket"))
+    basket = session["basket"]
+    r_id = int(list(basket.keys())[0])
+
+    item = str(item_id)
+    restaurant = str(r_id)
+
+    if item in basket[restaurant]:
+        del basket[restaurant][item]
+
+    session["basket"]=basket
+    flash("Item removed from basket")
+    return redirect(url_for("viewbasket"))
+
+@app.route("/basket/checkout", methods=["POST"])
+def checkout():
+    if "user_id" not in session:
+        flash("Please login first")
+        return redirect(url_for("user_login"))
+    user_id = session["user_id"]
+    if "basket" not in session:
+        flash("Your basket is empty")
+        return redirect(url_for("userhome"))
+    basket = session["basket"]
+
+    basket = session["basket"]
+    r_id = int(list(basket.keys())[0])
+    order = create_order("pending",datetime.datetime.now(),user_id,r_id)
+    for item_id, quantity in basket[str(r_id)].items():
+        item = Items.query.get(int(item_id))
+        for _ in range(quantity):
+            order.items.append(item)
+
+    db.session.commit()
+    session.pop("basket")
+    flash("Order placed")
+    return redirect(url_for("userhome"))
+        
 with app.app_context():
     db.create_all()
 

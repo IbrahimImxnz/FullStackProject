@@ -28,8 +28,8 @@ def create_menu_item(Category,Name,Price,Description,Picture,total_price,R_id):
     db.session.commit()
     return item
 
-def create_order(State,Date,customer_id):
-    order = Order(State=State,Date=Date,customer_id=customer_id)
+def create_order(State,Date,customer_id,restaurant_id):
+    order = Order(State=State,Date=Date,customer_id=customer_id,restaurant_id=restaurant_id)
     db.session.add(order)
     db.session.commit()
     return order
