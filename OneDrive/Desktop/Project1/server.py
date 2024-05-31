@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect, url_for, request,flash,session
+from flask import Flask, render_template, redirect, url_for, request,flash,session, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from database import Restaurant,Customer,Order,Items,db
-from databasequeries import create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant,delete_item
+from databasequeries import get_orders_of_restaurant,create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant,delete_item
 import re
 import datetime
 
@@ -198,8 +198,13 @@ def addtobasket(item_id):
 
     if "basket" not in session:
         session["basket"]={}
-
+    
     basket = session["basket"]
+
+    if basket and list(basket.keys())[0] != restaurant:
+        flash("Previous basket deleted!")
+        session.pop("basket")
+    
     if restaurant not in basket:
         basket[restaurant] = {}
 
@@ -230,7 +235,10 @@ def viewbasket():
     for item_id,quantity in basket[str(restaurant_id)].items():
         item = Items.query.get(int(item_id))
         total = item.Price * quantity
-    return render_template("basket.html", basket_items=basket_items, restaurant = restaurant, total= total)
+    if not list(basket_items):
+        return redirect(url_for("userhome"))  
+    else: 
+        return render_template("basket.html", basket_items=basket_items, restaurant = restaurant, total= total)
 
 @app.route("/basket/remove/<int:item_id>", methods=["POST"])
 def removefrombasket(item_id):
@@ -246,9 +254,15 @@ def removefrombasket(item_id):
     if item in basket[restaurant]:
         del basket[restaurant][item]
 
+    restaurant_id = int(list(basket.keys())[0])
+    basket_items = [(Items.query.get(int(item_id)), quantity) for item_id, quantity in basket[str(restaurant_id)].items()]    
+
     session["basket"]=basket
     flash("Item removed from basket")
-    return redirect(url_for("viewbasket"))
+    if not list(basket_items): 
+        return redirect(url_for("userhome"))
+    else: 
+        return redirect(url_for("viewbasket"))
 
 @app.route("/basket/checkout", methods=["POST"])
 def checkout():
@@ -259,21 +273,53 @@ def checkout():
     if "basket" not in session:
         flash("Your basket is empty")
         return redirect(url_for("userhome"))
-    basket = session["basket"]
 
     basket = session["basket"]
+    
     r_id = int(list(basket.keys())[0])
     order = create_order("pending",datetime.datetime.now(),user_id,r_id)
     for item_id, quantity in basket[str(r_id)].items():
         item = Items.query.get(int(item_id))
         for _ in range(quantity):
             order.items.append(item)
+            
 
     db.session.commit()
     session.pop("basket")
     flash("Order placed")
     return redirect(url_for("userhome"))
-        
+
+@app.route("/userhome/orders", methods = ["GET", "POST"])
+def vieworders():
+    if "user_id" not in session:
+        flash("Please login first")
+        return redirect(url_for("user_login"))
+    customer = session.get("user_id")
+    orders  = get_orders_of_customer(customer)
+    return render_template("userorders.html",orders=orders)
+
+@app.route("/resthome/orders", methods = ["GET","POST"])
+def viewrestorders():
+    if "restaurant_id" not in session:
+            flash("Please login first")
+            return redirect(url_for("restaurant_login")) 
+    r_id = session.get("restaurant_id")
+    orders = get_orders_of_restaurant(r_id)
+
+    if request.method == "POST":
+        O_id = request.form.get("O_id")
+        State = request.form.get("State")
+        changedorder = Order.query.get(O_id)
+        if changedorder and changedorder.restaurant_id == r_id:
+            changedorder.State = State
+            db.session.commit()
+            flash("Order status updated")
+        else:
+            flash("Order not found")    
+        return redirect(url_for("viewrestorders"))    
+
+    return render_template("restorders.html", orders=orders)
+       
 with app.app_context():
     db.create_all()
 

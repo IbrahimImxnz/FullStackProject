@@ -13,11 +13,13 @@
         <a href="/login/restaurant">Login</a> or <a href="/register/restaurant">Register</a>
     </div>
     {% with messages = get_flashed_messages() %}
-      {% if messages %}      
-        {% for message in messages %}
-          <p>{{message}}</p>
-        {% endfor %}
-      {% endif %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
     {% endwith %}
 </body>
 </html>

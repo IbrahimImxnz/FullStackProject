@@ -87,4 +87,5 @@ class Order(db.Model):
     customer_id = db.Column(db.Integer, db.ForeignKey("customer.C_id"), nullable=False)
     restaurant_id = db.Column(db.Integer, db.ForeignKey("restaurant.R_id"), nullable=False) 
     items = db.relationship("Items",secondary=orders,backref="Order")
-        
+    customer = db.relationship("Customer", backref = "Order")
+    restaurant = db.relationship("Restaurant", backref ="Order")    

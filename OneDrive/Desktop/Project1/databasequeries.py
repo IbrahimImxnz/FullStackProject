@@ -37,6 +37,9 @@ def create_order(State,Date,customer_id,restaurant_id):
 def get_orders_of_customer(customer_id):
     return Order.query.filter_by(customer_id=customer_id).all()
 
+def get_orders_of_restaurant(restaurant_id):
+    return Order.query.filter_by(restaurant_id=restaurant_id).all()
+
 def get_items(R_id):
     return Items.query.filter_by(R_id=R_id).all()
 
