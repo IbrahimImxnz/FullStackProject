@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('register_user') }}">
+        <div>
+            <label for="email">Email</label><br>
+            <input type="email" id="email" name="Email" required><br>
+        </div>
+        <div>
+            <label for="first_name">First Name</label><br>
+            <input type="text" id="first_name" name="First_Name" required><br>
+        </div>
+        <div>
+            <label for="last_name">Last Name</label><br>
+            <input type="text" id="last_name" name="Last_Name" required><br>
+        </div>
+        <div>
+            <label for="address">Address</label><br>
+            <input type="text" id="address" name="Address" required><br>
+        </div>
+        <div>
+            <label for="zip_code">Zip Code</label><br>
+            <input type="text" id="zip_code" name="Zip" required><br>
+        </div>
+        <div>
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="Password" required><br>
+        </div>
+        <div>
+            <label for="confirm_password">Confirm Password</label><br>
+            <input type="password" id="confirm_password" name="Confirmed_Password" required><br>
+        </div>
+        <div>
+            <button type="submit">Sign Up</button>
+        </div>
+    </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
