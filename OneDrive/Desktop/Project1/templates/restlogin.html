@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>Login</h2>
+    <form method="POST" action="{{ url_for('restaurant_login') }}">
+        <div>
+            <label for="email">Email</label><br>
+            <input type="email" id="email" name="Email" required><br>
+        </div>
+        <div>
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="Password" required><br>
+        </div>
+        <div>
+            <button type="submit">Login</button>
+        </div>
+    </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>

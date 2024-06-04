@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>Welcome, {{ user.First_Name }}!</h2>
+    <h3>Restaurants that deliver to your area:</h3>
+    {% if restaurants %}
+        <div>
+            {% for restaurant in restaurants %}
+                <div>
+                    <h4><a href="{{ url_for('viewitems', restaurant_id=restaurant.R_id) }}">{{ restaurant.Name }}</a></h4>
+                    <p>{{ restaurant.Description }}</p>
+                    <p>Address: {{ restaurant.Address }}</p>
+                    <p>Opening Hours: {{ restaurant.Opening_hours }}</p>
+                </div>            
+        </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No restaurants deliver to your area.</p>
+    {% endif %}
+    <a href="{{ url_for('vieworders')}}">View Orders</a>
+    <a href="{{ url_for('logoutuser') }}">Logout</a>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
