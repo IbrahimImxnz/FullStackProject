@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>User Profile</h2>
+    <div>
+        <label>Email:</label>
+        <span>{{ user.Email }}</span>
+    </div>
+    <div>
+        <label>First Name:</label>
+        <span>{{ user.First_Name }}</span>
+    </div>
+    <div>
+        <label>Last Name:</label>
+        <span>{{ user.Last_Name }}</span>
+    </div>
+    <div>
+        <label>Address:</label>
+        <span>{{ user.Address }}</span>
+    </div>
+    <div>
+        <label>Zip Code:</label>
+        <span>{{ user.Zip }}</span>
+    </div>
+    <form method="POST" action= "{{ url_for('viewdetails')}}">
+        
+        <div>
+            <label for="Email">Change Email: </label><br>
+            <input type="email" id="email" name="Email"><br>
+            <button type="submit" >Update Email</button>
+        </div>
+        
+        <div>
+            <label for="First_Name">Change First Name: </label><br>
+            <input type="text" id="first_name" name="First_Name"><br>
+            <button type="submit">Update First Name</button>
+        </div>
+
+        <div>
+            <label for="Last_Name">Change Last Name: </label><br>
+            <input type="text" id="last_name" name="Last_Name"><br>
+            <button type="submit" >Update Last Name</button>
+        </div>
+        
+        <div>
+            <label for="Address">Change Address: </label><br>
+            <input type="text" id="address" name="Address"><br>
+            <button type="submit" >Update Address</button>
+        </div>
+
+        <div>
+            <label for="Zip">Change Zip Code</label><br>
+            <input type="text" id="zip_code" name="Zip"><br>
+            <button type="submit" >Update zip code</button>
+        </div>
+    </form>
+    <a href="{{ url_for('userhome') }}">Back to Home</a>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
