@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ restaurant.Name }} Home</title>
+    <style>
+        .item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .item img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            margin-right: 20px;
+            border-radius: 8px;
+        }
+        .item-details {
+            flex: 1;
+        }
+        .item-details h3 {
+            margin: 0;
+            padding: 0;
+        }
+        .item-details p {
+            margin: 5px 0;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>Welcome, {{ restaurant.Name }}</h2>
+    <h3>Add New Menu Item</h3>
+    <form method="POST">
+        <label for="Category">Category:</label>
+        <input type="text" id="Category" name="Category"><br><br>
+        <label for="Name">Name:</label>
+        <input type="text" id="Name" name="Name" required><br><br>
+        <label for="Price">Price:</label>
+        <input type="number" id="Price" name="Price" required><br><br>
+        <label for="Description">Description:</label>
+        <textarea id="Description" name="Description" required></textarea><br><br>
+        <label for="Picture">Picture:</label>
+        <input type="file" id="Picture" name="Picture"><br><br>
+        <button type="submit">Add Item</button>
+    </form>
+    <h3>Menu Items</h3>
+    <div>
+        {% for item in items %}
+            <div class="item">
+                <img src="{{ item.Picture }}" alt="{{ item.Name }}">
+                <div class="item-details">
+                    <h3>{{ item.Name }}</h3>
+                    <p><strong>Description:</strong> {{ item.Description }}</p>
+                    <p><strong>Category:</strong> {{ item.Category }}</p>
+                    <p><strong>Price:</strong> €{{ item.Price }}</p>
+                    <form action="{{ url_for('delete_menuitem', item_id=item.I_id) }}" method="post">
+                        <button type="submit">Delete Item</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <a href="{{ url_for('viewrestorders')}}">View Restaurant Orders</a>
+    <a href="{{ url_for('logoutrest') }}">Logout</a>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+         <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+         </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
