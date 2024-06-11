@@ -319,6 +319,62 @@ def viewrestorders():
         return redirect(url_for("viewrestorders"))    
 
     return render_template("restorders.html", orders=orders)
+
+@app.route("/userhome/details", methods = ["POST","GET"])
+def viewdetails():
+    if "user_id" not in session: 
+        flash("Please login first")
+        return redirect(url_for("user_login"))
+    
+    #email = session.get("email")
+    user = Customer.query.get(session.get("user_id"))
+
+    if request.method == "POST":
+        #C_id = request.form.get("C_id")
+        #field = request.form.get("field")
+        #new_value = request.form.get("new_value")
+        Email = request.form.get("Email")
+        First_Name = request.form.get("First_Name")
+        Last_Name = request.form.get("Last_Name")
+        Address = request.form.get("Address")
+        Zip = request.form.get("Zip")
+        #changeduser = Customer.query.get(C_id)
+
+        if Email:
+            user.Email = Email
+        if First_Name:
+            user.First_Name = First_Name
+        if Last_Name:
+            user.Last_Name = Last_Name
+        if Address:
+            user.Address = Address
+        if Zip: 
+            user.Zip = Zip                 
+        #if changeduser:
+            #changeduser.Email=Email
+            #changeduser.First_Name=First_Name
+            #changeduser.Last_Name=Last_Name
+            #changeduser.Address=Address
+            #changeduser.Zip=Zip
+            #this method required to update all fields and not each one on its own
+            #if field == "Email":
+                #changeduser.Email = new_value
+            #elif field == "First_Name":
+                #changeduser.First_Name = new_value
+            #elif field == "Last_Name":
+                #changeduser.Last_Name = new_value
+            #elif field == "Address":
+                #changeduser.Address = new_value
+            #elif field == "Zip":
+                #changeduser.Zip = new_value
+            #user = Customer.query.get(changeduser.C_id)
+        db.session.commit()
+        flash("Profile updated successfully")
+        return redirect(url_for("viewdetails")) 
+    
+
+    return render_template("userdetails.html",user=user)   
+ 
        
 with app.app_context():
     db.create_all()

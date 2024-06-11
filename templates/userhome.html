@@ -24,6 +24,7 @@
     {% else %}
         <p>No restaurants deliver to your area.</p>
     {% endif %}
+    <a href="{{ url_for('viewdetails')}}">View Details</a>
     <a href="{{ url_for('vieworders')}}">View Orders</a>
     <a href="{{ url_for('logoutuser') }}">Logout</a>
     {% with messages = get_flashed_messages() %}
