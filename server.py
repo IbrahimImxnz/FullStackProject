@@ -4,7 +4,11 @@ from database import Restaurant,Customer,Order,Items,db
 from databasequeries import get_orders_of_restaurant,create_user,create_order,create_menu_item,create_restaurant,get_user,get_items,get_orders_of_customer,get_restaurant,delete_item
 import re
 import datetime
+import smtplib
+import string
+from dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydatabase.db"
@@ -374,8 +378,29 @@ def viewdetails():
     
 
     return render_template("userdetails.html",user=user)   
- 
-       
+
+@app.route("/login/forgotpass", methods = ["POST"])
+def forgotpass():
+    if request.method == "POST":
+        email = request.form.get("Email")
+
+    SMTP = {
+    "gmail.com": {"server": "smtp.gmail.com", "port": 587},
+    "outlook.com": {"server": "smtp.office365.com", "port": 587},
+    "hotmail.com": {"server": "smtp.office365.com", "port": 587},
+    }
+
+    domain = email.split('@')[1]
+    smtp_object = smtplib.SMTP(SMTP[domain]["server"],SMTP[domain]["port"])
+    smtp_object.ehlo()
+    smtp_object.starttls()
+
+    
+
+    smtp_object()
+
+
+
 with app.app_context():
     db.create_all()
 
