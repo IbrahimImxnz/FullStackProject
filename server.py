@@ -6,7 +6,9 @@ import re
 import datetime
 import smtplib
 import string
+import os
 from dotenv import load_dotenv
+import random
 
 load_dotenv()
 app = Flask(__name__)
@@ -379,26 +381,81 @@ def viewdetails():
 
     return render_template("userdetails.html",user=user)   
 
-@app.route("/login/forgotpass", methods = ["POST"])
-def forgotpass():
-    if request.method == "POST":
-        email = request.form.get("Email")
-
-    SMTP = {
-    "gmail.com": {"server": "smtp.gmail.com", "port": 587},
-    "outlook.com": {"server": "smtp.office365.com", "port": 587},
-    "hotmail.com": {"server": "smtp.office365.com", "port": 587},
-    }
-
-    domain = email.split('@')[1]
-    smtp_object = smtplib.SMTP(SMTP[domain]["server"],SMTP[domain]["port"])
+def forgotpassword(to_email, subj, message):
+    smtp_object = smtplib.SMTP('smtp.office365.com',587)
     smtp_object.ehlo()
-    smtp_object.starttls()
 
-    
+    from_email = os.getenv("Email")
+    password = os.getenv("Outlook")
 
-    smtp_object()
 
+    #message  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+    #subj = "New password for your Foodhub account"
+    msg = "Subject: " + subj + '\n' + message
+
+    try:
+        smtp_object.starttls()
+        smtp_object.login(from_email,password)
+        smtp_object.sendmail(from_email,to_email,msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+
+@app.route("/userlogin/forgotpass", methods = ["POST"])
+def forgotpass():
+    #SMTP = {
+    #"gmail.com": {"server": "smtp.gmail.com", "port": 587},
+    #"outlook.com": {"server": "smtp.office365.com", "port": 587},
+    #"hotmail.com": {"server": "smtp.office365.com", "port": 587},
+    #}
+
+    #domain = email.split('@')[1]
+    if request.method == "POST":
+        to_email = request.form.get("Email")
+
+        user = get_user(to_email)    
+        message  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+
+        if user:
+            user.set_pass(message)
+            db.session.commit()
+
+            forgotpassword(to_email, "New password for your Foodhub account", message)
+            flash("Your password has been reset")
+
+            return redirect(url_for("user_login"))
+        else:
+            flash("Email not found")
+            return redirect(url_for("user_login"))
+    return render_template("forgotpass.html")
+
+@app.route("/restlogin/forgotpass", methods = ["POST"])
+def restforgotpass():
+    #SMTP = {
+    #"gmail.com": {"server": "smtp.gmail.com", "port": 587},
+    #"outlook.com": {"server": "smtp.office365.com", "port": 587},
+    #"hotmail.com": {"server": "smtp.office365.com", "port": 587},
+    #}
+
+    #domain = email.split('@')[1]
+    if request.method == "POST":
+        to_email = request.form.get("Email")
+
+        restaurant = get_restaurant(to_email)    
+        message  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+
+        if restaurant:
+            restaurant.set_pass(message)
+            db.session.commit()
+
+            forgotpassword(to_email, "New password for your Foodhub account", message)
+            flash("Your password has been reset")
+
+            return redirect(url_for("restaurant_login"))
+        else:
+            flash("Email not found")
+            return redirect(url_for("restaurant_login"))
+    return render_template("forgotpass.html")
 
 
 with app.app_context():
