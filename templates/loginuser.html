@@ -21,6 +21,8 @@
             <button type="submit">Login</button>
         </div>
     </form>
+    <a href="{{ url_for('forgotpass')}}">Forgot Password</a>
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
          <ul>

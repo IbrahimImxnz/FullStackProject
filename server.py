@@ -455,7 +455,7 @@ def restforgotpass():
         else:
             flash("Email not found")
             return redirect(url_for("restaurant_login"))
-    return render_template("forgotpass.html")
+    return render_template("forgotpassrest.html")
 
 
 with app.app_context():
