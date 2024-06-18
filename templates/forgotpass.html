@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/styling.css') }}">
+</head>
+<body>
+    <h2>Forgot Password</h2>
+    <form method="POST" action="{{ url_for('forgotpass') }}">
+        <label for="to_email">Enter your email:</label>
+        <input type="to_email" id="to_email" name="Email" required>
+        <button type="submit">Reset Password</button>
+    </form>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
