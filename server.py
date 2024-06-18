@@ -452,7 +452,7 @@ def restforgotpass():
             restaurant.set_pass(message)
             db.session.commit()
 
-            forgotpassword(to_email, "New password for your Foodhub account", message)
+            forgotpassword(to_email, "New password for your Foodhub account", f"Your new password is: {message}")
             flash("Your password has been reset")
 
             return redirect(url_for("restaurant_login"))
