@@ -10,7 +10,8 @@ import os
 from dotenv import load_dotenv
 import random
 
-load_dotenv()
+dotenv_path = os.path.join(os.path.dirname(__file__), 'passes.env')
+load_dotenv(dotenv_path)
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydatabase.db"
@@ -391,17 +392,18 @@ def forgotpassword(to_email, subj, message):
 
     #message  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
     #subj = "New password for your Foodhub account"
-    msg = "Subject: " + subj + '\n' + message
+    msg = f"Subject: {subj}\n\n{message}"
 
     try:
         smtp_object.starttls()
         smtp_object.login(from_email,password)
         smtp_object.sendmail(from_email,to_email,msg)
+        smtp_object.quit()
     except Exception as e:
         print(f"Error sending email: {e}")
 
 
-@app.route("/userlogin/forgotpass", methods = ["POST"])
+@app.route("/userlogin/forgotpass", methods = ["POST","GET"])
 def forgotpass():
     #SMTP = {
     #"gmail.com": {"server": "smtp.gmail.com", "port": 587},
@@ -413,14 +415,16 @@ def forgotpass():
     if request.method == "POST":
         to_email = request.form.get("Email")
 
-        user = get_user(to_email)    
+        user = get_user(to_email)
         message  = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+
+        
 
         if user:
             user.set_pass(message)
             db.session.commit()
 
-            forgotpassword(to_email, "New password for your Foodhub account", message)
+            forgotpassword(to_email,"New password for your Foodhub account", f"Your new password is: {message}")
             flash("Your password has been reset")
 
             return redirect(url_for("user_login"))
@@ -429,7 +433,7 @@ def forgotpass():
             return redirect(url_for("user_login"))
     return render_template("forgotpass.html")
 
-@app.route("/restlogin/forgotpass", methods = ["POST"])
+@app.route("/restlogin/forgotpass", methods = ["POST","GET"])
 def restforgotpass():
     #SMTP = {
     #"gmail.com": {"server": "smtp.gmail.com", "port": 587},
